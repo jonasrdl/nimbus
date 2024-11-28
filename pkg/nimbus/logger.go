@@ -3,7 +3,13 @@ package nimbus
 import (
 	"fmt"
 	"os"
+	"sync"
 	"time"
+)
+
+var (
+	globalLogger *Logger
+	once         sync.Once
 )
 
 // Logger is the core logging struct.
@@ -14,6 +20,23 @@ type Logger struct {
 // New creates a new Logger with the specified minimum log level.
 func New(level LogLevel) *Logger {
 	return &Logger{level: level}
+}
+
+// GetGlobalLogger returns the global logger instance.
+// It initializes the logger once with the default InfoLevel.
+func GetGlobalLogger() *Logger {
+	once.Do(func() {
+		globalLogger = New(InfoLevel)
+	})
+	return globalLogger
+}
+
+// SetGlobalLogger allows configuring the global logger instance with a custom log level.
+func SetGlobalLogger(level LogLevel) {
+	once.Do(func() {
+		globalLogger = New(level)
+	})
+	globalLogger.level = level
 }
 
 // Log logs a message with the specified level.
@@ -59,4 +82,26 @@ func (l *Logger) Error(msg string, fields ...interface{}) {
 
 func (l *Logger) Fatal(msg string, fields ...interface{}) {
 	l.Log(FatalLevel, msg, fields...)
+}
+
+// Global logger convenience functions
+
+func Debug(msg string, fields ...interface{}) {
+	GetGlobalLogger().Debug(msg, fields...)
+}
+
+func Info(msg string, fields ...interface{}) {
+	GetGlobalLogger().Info(msg, fields...)
+}
+
+func Warn(msg string, fields ...interface{}) {
+	GetGlobalLogger().Warn(msg, fields...)
+}
+
+func Error(msg string, fields ...interface{}) {
+	GetGlobalLogger().Error(msg, fields...)
+}
+
+func Fatal(msg string, fields ...interface{}) {
+	GetGlobalLogger().Fatal(msg, fields...)
 }
