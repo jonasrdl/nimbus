@@ -2,9 +2,9 @@ package nimbus
 
 import (
 	"fmt"
+	"nimbus/internal/formatter"
 	"os"
 	"sync"
-	"time"
 )
 
 var (
@@ -14,22 +14,31 @@ var (
 
 // Logger is the core logging struct, now with support for structured fields.
 type Logger struct {
-	level  LogLevel
-	fields map[string]interface{}
+	level     LogLevel
+	fields    map[string]interface{}
+	formatter formatter.Formatter
 }
 
-// New creates a new Logger with the specified minimum log level.
-func New(level LogLevel) *Logger {
+// New creates a new Logger with the specified minimum log level and format type.
+func New(level LogLevel, formatType string) *Logger {
+	var formatterInstance formatter.Formatter
+	if formatType == "json" {
+		formatterInstance = &formatter.JSONFormatter{}
+	} else {
+		formatterInstance = &formatter.TextFormatter{}
+	}
+
 	return &Logger{
-		level:  level,
-		fields: make(map[string]interface{}), // initialize fields as an empty map
+		level:     level,
+		fields:    make(map[string]interface{}), // initialize fields as an empty map
+		formatter: formatterInstance,
 	}
 }
 
 // GetGlobalLogger returns the global logger instance.
 func GetGlobalLogger() *Logger {
 	once.Do(func() {
-		globalLogger = New(InfoLevel)
+		globalLogger = New(InfoLevel, "text")
 	})
 	return globalLogger
 }
@@ -37,7 +46,7 @@ func GetGlobalLogger() *Logger {
 // SetGlobalLogger allows configuring the global logger instance with a custom level.
 func SetGlobalLogger(level LogLevel) {
 	once.Do(func() {
-		globalLogger = New(level)
+		globalLogger = New(level, "text")
 	})
 	globalLogger.level = level
 }
@@ -47,8 +56,6 @@ func (l *Logger) Log(level LogLevel, message string, fields ...interface{}) {
 	if level < l.level {
 		return
 	}
-	timestamp := time.Now().Format("2006-01-02 15:04:05")
-	logMessage := fmt.Sprintf("[%s] [%s] %s", timestamp, level.String(), message)
 
 	// Combine additional fields passed to the Log function with the predefined fields in the Logger instance
 	allFields := make(map[string]interface{})
@@ -68,22 +75,13 @@ func (l *Logger) Log(level LogLevel, message string, fields ...interface{}) {
 		}
 	}
 
-	// Add the fields to the log message
-	if len(allFields) > 0 {
-		logMessage += " - "
-		for key, value := range allFields {
-			logMessage += fmt.Sprintf("%s=%v ", key, value)
-		}
-	}
+	// Use the formatter to format the log message
+	logMessage := l.formatter.Format(level.String(), message, allFields)
 
-	// Remove the trailing space
-	if len(logMessage) > 0 && logMessage[len(logMessage)-1] == ' ' {
-		logMessage = logMessage[:len(logMessage)-1]
-	}
-
-	// Print the final log message
+	// Print the formatted log message
 	fmt.Println(logMessage)
 
+	// If the level is Fatal, exit the program
 	if level == FatalLevel {
 		os.Exit(1)
 	}
