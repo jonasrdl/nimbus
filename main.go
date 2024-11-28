@@ -22,4 +22,11 @@ func main() {
 	logger.Error("Instance-based logger: An error occurred", "error", "disk full")
 	// Uncomment Fatal if you want to terminate the program
 	// logger.Fatal("Instance-based logger: Fatal error, shutting down")
+
+	// Example 3: Using WithFields to add persistent fields
+	loggerWithFields := logger.WithFields(map[string]interface{}{
+		"user_id": 1234,
+		"session": "abc1234",
+	})
+	loggerWithFields.Info("User logged in")
 }
