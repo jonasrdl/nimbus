@@ -13,6 +13,13 @@ var (
 	once         sync.Once
 )
 
+// LoggerConfig holds configuration options for the logger.
+type LoggerConfig struct {
+	Level      LogLevel
+	FormatType string
+	LogFile    string
+}
+
 // Logger is the core logging struct, now with support for structured fields.
 type Logger struct {
 	level     LogLevel
@@ -22,25 +29,25 @@ type Logger struct {
 }
 
 // New creates a new Logger with the specified minimum log level and format type.
-func New(level LogLevel, formatType, logFilePath string) *Logger {
+func New(config LoggerConfig) *Logger {
 	var formatterInstance formatter.Formatter
-	if formatType == "json" {
+	if config.FormatType == "json" {
 		formatterInstance = &formatter.JSONFormatter{}
 	} else {
 		formatterInstance = &formatter.TextFormatter{}
 	}
 
 	var logFile *os.File
-	if logFilePath != "" {
+	if config.LogFile != "" {
 		var err error
-		logFile, err = os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		logFile, err = os.OpenFile(config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o666)
 		if err != nil {
 			fmt.Printf("Error opening log file: %v\n", err)
 		}
 	}
 
 	return &Logger{
-		level:     level,
+		level:     config.Level,
 		fields:    make(map[string]interface{}), // initialize fields as an empty map
 		formatter: formatterInstance,
 		logFile:   logFile,
@@ -50,17 +57,17 @@ func New(level LogLevel, formatType, logFilePath string) *Logger {
 // GetGlobalLogger returns the global logger instance.
 func GetGlobalLogger() *Logger {
 	once.Do(func() {
-		globalLogger = New(InfoLevel, "text", "")
+		globalLogger = New(LoggerConfig{Level: InfoLevel, FormatType: "text"})
 	})
 	return globalLogger
 }
 
 // SetGlobalLogger allows configuring the global logger instance with a custom level.
-func SetGlobalLogger(level LogLevel) {
+func SetGlobalLogger(config LoggerConfig) {
 	once.Do(func() {
-		globalLogger = New(level, "text", "")
+		globalLogger = New(config)
 	})
-	globalLogger.level = level
+	globalLogger.level = config.Level
 }
 
 // Log logs a message with the specified level and fields.

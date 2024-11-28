@@ -19,16 +19,17 @@ go get github.com/jonasrdl/nimbus
 ## Usage
 
 ### Create a new logger
+
 ```go
 package main
 
 import (
-	"github.com/jonasrdl/nimbus"
+	"github.com/jonasrdl/nimbus/pkg/nimbus"
 )
 
 func main() {
 	// Create a new logger with the desired log level
-	logger := nimbus.New(nimbus.InfoLevel)
+	logger := nimbus.New(nimbus.LoggerConfig{Level: nimbus.InfoLevel})
 
 	// Log messages with different log levels
 	logger.Info("This is an info message")
@@ -43,7 +44,7 @@ You can also use a global logger instance for simpler access throughout your app
 package main
 
 import (
-	"github.com/jonasrdl/nimbus"
+	"github.com/jonasrdl/nimbus/pkg/nimbus"
 )
 
 func main() {
@@ -59,7 +60,7 @@ Attach key-value pairs to your log messages for more context:
 package main
 
 import (
-	"github.com/jonasrdl/nimbus"
+	"github.com/jonasrdl/nimbus/pkg/nimbus"
 )
 
 func main() {
@@ -74,12 +75,12 @@ You can create a new logger instance with additional fields:
 package main
 
 import (
-	"github.com/jonasrdl/nimbus"
+	"github.com/jonasrdl/nimbus/pkg/nimbus"
 )
 
 func main() {
 	// Create a logger with predefined fields
-	logger := nimbus.New(nimbus.InfoLevel)
+	logger := nimbus.New(nimbus.LoggerConfig{Level: nimbus.InfoLevel})
 	loggerWithFields := logger.WithFields(map[string]interface{}{
 		"app_version": "1.0.0",
 	})
