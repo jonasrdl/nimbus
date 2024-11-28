@@ -9,7 +9,11 @@ all: lint
 
 .PHONY: lint
 lint:
-	$(LINTER) run
+	$(LINTER) run -v
+
+.PHONY: lint-fix
+lint-fix:
+	$(LINTER) run -v --fix
 
 .PHONY: fmt
 fmt:
