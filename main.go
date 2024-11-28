@@ -15,7 +15,7 @@ func main() {
 	// nimbus.Fatal("Global logger: Fatal error, shutting down")
 
 	// Example 2: Using an instance-based logger
-	logger := nimbus.New(nimbus.InfoLevel, "text")
+	logger := nimbus.New(nimbus.InfoLevel, "text", "")
 	logger.Info("Instance-based logger: Application started", "version", "1.0.0")
 	logger.Debug("Instance-based logger: Debugging enabled (this will not be shown)")
 	logger.Warn("Instance-based logger: Potential issue detected", "module", "auth")
@@ -31,8 +31,12 @@ func main() {
 	loggerWithFields.Info("User logged in")
 
 	// Example 4: Using JSON formatter
-	jsonLogger := nimbus.New(nimbus.InfoLevel, "json")
+	jsonLogger := nimbus.New(nimbus.InfoLevel, "json", "")
 	//nolint:lll
 	// {"level":"INFO","message":"JSON logger: Application","status":"running","timestamp":"2024-11-28 11:22:56","version":"1.0.0"}
 	jsonLogger.Info("JSON logger: Application", "version", "1.0.0", "status", "running")
+
+	// Example 5: Logs to a file
+	fileLogger := nimbus.New(nimbus.InfoLevel, "text", "logs.txt")
+	fileLogger.Info("File logger: Application started", "version", "1.0.0", "status", "running")
 }
