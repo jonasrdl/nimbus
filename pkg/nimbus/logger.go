@@ -2,9 +2,10 @@ package nimbus
 
 import (
 	"fmt"
-	"nimbus/internal/formatter"
 	"os"
 	"sync"
+
+	"github.com/jonasrdl/nimbus/internal/formatter"
 )
 
 var (

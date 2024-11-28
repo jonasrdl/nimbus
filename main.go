@@ -1,6 +1,6 @@
 package main
 
-import "nimbus/pkg/nimbus"
+import "github.com/jonasrdl/nimbus/pkg/nimbus"
 
 // This file demonstrates how to use the nimbus package to log messages.
 
@@ -32,6 +32,7 @@ func main() {
 
 	// Example 4: Using JSON formatter
 	jsonLogger := nimbus.New(nimbus.InfoLevel, "json")
+	//nolint:lll
 	// {"level":"INFO","message":"JSON logger: Application","status":"running","timestamp":"2024-11-28 11:22:56","version":"1.0.0"}
 	jsonLogger.Info("JSON logger: Application", "version", "1.0.0", "status", "running")
 }
