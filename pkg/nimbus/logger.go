@@ -18,10 +18,11 @@ type Logger struct {
 	level     LogLevel
 	fields    map[string]interface{}
 	formatter formatter.Formatter
+	logFile   *os.File
 }
 
 // New creates a new Logger with the specified minimum log level and format type.
-func New(level LogLevel, formatType string) *Logger {
+func New(level LogLevel, formatType, logFilePath string) *Logger {
 	var formatterInstance formatter.Formatter
 	if formatType == "json" {
 		formatterInstance = &formatter.JSONFormatter{}
@@ -29,17 +30,27 @@ func New(level LogLevel, formatType string) *Logger {
 		formatterInstance = &formatter.TextFormatter{}
 	}
 
+	var logFile *os.File
+	if logFilePath != "" {
+		var err error
+		logFile, err = os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			fmt.Printf("Error opening log file: %v\n", err)
+		}
+	}
+
 	return &Logger{
 		level:     level,
 		fields:    make(map[string]interface{}), // initialize fields as an empty map
 		formatter: formatterInstance,
+		logFile:   logFile,
 	}
 }
 
 // GetGlobalLogger returns the global logger instance.
 func GetGlobalLogger() *Logger {
 	once.Do(func() {
-		globalLogger = New(InfoLevel, "text")
+		globalLogger = New(InfoLevel, "text", "")
 	})
 	return globalLogger
 }
@@ -47,7 +58,7 @@ func GetGlobalLogger() *Logger {
 // SetGlobalLogger allows configuring the global logger instance with a custom level.
 func SetGlobalLogger(level LogLevel) {
 	once.Do(func() {
-		globalLogger = New(level, "text")
+		globalLogger = New(level, "text", "")
 	})
 	globalLogger.level = level
 }
@@ -81,6 +92,13 @@ func (l *Logger) Log(level LogLevel, message string, fields ...interface{}) {
 
 	// Print the formatted log message
 	fmt.Println(logMessage)
+
+	if l.logFile != nil {
+		_, err := l.logFile.WriteString(logMessage + "\n")
+		if err != nil {
+			fmt.Printf("Error writing to log file: %v\n", err)
+		}
+	}
 
 	// If the level is Fatal, exit the program
 	if level == FatalLevel {
